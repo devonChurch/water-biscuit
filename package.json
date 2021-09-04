@@ -1,0 +1,16 @@
+{
+  "name": "water-biscuit",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Devon Church <notifydevon@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn start:server",
+    "start:server": "nodemon node ./server/"
+  },
+  "devDependencies": {
+    "apollo-server": "^3.3.0",
+    "graphql": "^15.5.2",
+    "nodemon": "^2.0.12"
+  }
+}
