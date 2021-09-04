@@ -38,24 +38,43 @@ const nuggetItems = [
   },
 ];
 
+const studyItems = [
+  {
+    studyId: "001",
+    title: "Some great food",
+    content: "Food is pretty important",
+  },
+  {
+    studyId: "002",
+    title: "Cars that are awesome",
+    content: "Transportation can be helpful",
+  },
+  {
+    studyId: "003",
+    title: "Interesting Technology",
+    content: "Technology let me write this",
+  },
+];
+
 const typeDefs = gql`
+  type Study {
+    studyId: String!
+    title: String!
+    content: String!
+  }
+
   type Nugget {
     nuggetId: String!
     studyId: String!
+    study: Study
     title: String!
     content: String
     tags: [String]
   }
 
-  type Study {
-    studyId: String!
-    title: String!
-    content: String
-    nuggetIds: [String]
-  }
-
   type Query {
     nuggets(tags: [String]): [Nugget]
+    study(studyid: String): Study
   }
 `;
 
@@ -64,13 +83,27 @@ const resolvers = {
     nuggets: (parent, args, context, info) => {
       const { tags } = args;
       const hasTags = tags?.length;
+
       return !hasTags
         ? nuggetItems
-        : nuggetItems.filter((nugget) =>
-            tags.some((tag) => nugget.tags.includes(tag))
+        : nuggetItems.filter((nuggetItem) =>
+            tags.some((tag) => nuggetItem.tags.includes(tag))
           );
     },
+    study(parent, args, context, info) {
+      console.log({ parent, args, context, info });
+    },
   },
+
+  Nugget: {
+    study(parent) {
+      return studyItems.find(
+        (studyItem) => studyItem.studyId === parent.studyId
+      );
+    },
+  },
+
+  Study: {},
 };
 
 const server = new ApolloServer({ typeDefs, resolvers });
