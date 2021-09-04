@@ -81,16 +81,10 @@ const typeDefs = gql`
 const resolvers = {
   Query: {
     nuggets: (parent, args, context, info) => {
-      const hasTags = args?.tags.length;
-
-      return !hasTags
-        ? nuggetItems
-        : nuggetItems.filter((nuggetItem) =>
-            args.tags.some((tag) => nuggetItem.tags.includes(tag))
-          );
+      return context.dataSources.nuggetAPI.getNuggetItems(args.tags);
     },
     study(parent, args, context, info) {
-      return studyItems.find((studyItem) => studyItem.studyId === args.studyId);
+      return context.dataSources.studyAPI.getStudy(args.studyId);
     },
   },
 
@@ -105,7 +99,43 @@ const resolvers = {
   Study: {},
 };
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const dataSources = () => {
+  return {
+    nuggetAPI: (() => {
+      const requestAllNuggetItems = () =>
+        new Promise((resolve) => setTimeout(() => resolve(nuggetItems), 2000));
+      const getNugget = (nuggetId) =>
+        requestAllNuggetItems().then((nuggetItems) =>
+          nuggetItems.find((nugget) => nugget.nuggetId === nuggetId)
+        );
+      const getNuggetItems = (tags) => requestAllNuggetItems(tags).then((nuggetItems) => {
+        return !tags?.length
+          ? nuggetItems
+          : nuggetItems.filter((nuggetItem) =>
+              tags.some((tag) => nuggetItem.tags.includes(tag))
+            );
+      });
+
+      return { getNuggetItems, getNugget };
+    })(),
+    studyAPI: (() => {
+      const requestAllStudyItems = () =>
+        new Promise((resolve) => setTimeout(() => resolve(studyItems), 2000));
+      const getStudy = (studyId) =>
+        requestAllStudyItems().then((studyItems) =>
+          studyItems.find((study) => study.studyId === studyId)
+        );
+
+      return { getStudy };
+    })(),
+  };
+};
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  dataSources,
+});
 
 server.listen().then(({ url }) => {
   console.log(`🚀  Server ready at ${url}`);
