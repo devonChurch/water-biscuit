@@ -74,24 +74,23 @@ const typeDefs = gql`
 
   type Query {
     nuggets(tags: [String]): [Nugget]
-    study(studyid: String): Study
+    study(studyId: String): Study
   }
 `;
 
 const resolvers = {
   Query: {
     nuggets: (parent, args, context, info) => {
-      const { tags } = args;
-      const hasTags = tags?.length;
+      const hasTags = args?.tags.length;
 
       return !hasTags
         ? nuggetItems
         : nuggetItems.filter((nuggetItem) =>
-            tags.some((tag) => nuggetItem.tags.includes(tag))
+            args.tags.some((tag) => nuggetItem.tags.includes(tag))
           );
     },
     study(parent, args, context, info) {
-      console.log({ parent, args, context, info });
+      return studyItems.find((studyItem) => studyItem.studyId === args.studyId);
     },
   },
 
