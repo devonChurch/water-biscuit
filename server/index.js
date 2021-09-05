@@ -56,6 +56,39 @@ const studyItems = [
   },
 ];
 
+const createNuggetApi = () => {
+  const requestAllNuggetItems = () =>
+    new Promise((resolve) => setTimeout(() => resolve(nuggetItems), 2000));
+
+  const getNugget = (nuggetId) =>
+    requestAllNuggetItems().then((nuggetItems) =>
+      nuggetItems.find((nugget) => nugget.nuggetId === nuggetId)
+    );
+
+  const getNuggetItems = (tags) =>
+    requestAllNuggetItems(tags).then((nuggetItems) =>
+      !tags?.length
+        ? nuggetItems
+        : nuggetItems.filter((nuggetItem) =>
+            tags.some((tag) => nuggetItem.tags.includes(tag))
+          )
+    );
+
+  return { getNuggetItems, getNugget };
+};
+
+const createStudyApi = () => {
+  const requestAllStudyItems = () =>
+    new Promise((resolve) => setTimeout(() => resolve(studyItems), 2000));
+
+  const getStudy = (studyId) =>
+    requestAllStudyItems().then((studyItems) =>
+      studyItems.find((study) => study.studyId === studyId)
+    );
+
+  return { getStudy };
+};
+
 const typeDefs = gql`
   type Study {
     studyId: String!
@@ -90,9 +123,7 @@ const resolvers = {
 
   Nugget: {
     study(parent) {
-      return studyItems.find(
-        (studyItem) => studyItem.studyId === parent.studyId
-      );
+      return context.dataSources.studyAPI.getStudy(parent.studyId);
     },
   },
 
@@ -101,33 +132,8 @@ const resolvers = {
 
 const dataSources = () => {
   return {
-    nuggetAPI: (() => {
-      const requestAllNuggetItems = () =>
-        new Promise((resolve) => setTimeout(() => resolve(nuggetItems), 2000));
-      const getNugget = (nuggetId) =>
-        requestAllNuggetItems().then((nuggetItems) =>
-          nuggetItems.find((nugget) => nugget.nuggetId === nuggetId)
-        );
-      const getNuggetItems = (tags) => requestAllNuggetItems(tags).then((nuggetItems) => {
-        return !tags?.length
-          ? nuggetItems
-          : nuggetItems.filter((nuggetItem) =>
-              tags.some((tag) => nuggetItem.tags.includes(tag))
-            );
-      });
-
-      return { getNuggetItems, getNugget };
-    })(),
-    studyAPI: (() => {
-      const requestAllStudyItems = () =>
-        new Promise((resolve) => setTimeout(() => resolve(studyItems), 2000));
-      const getStudy = (studyId) =>
-        requestAllStudyItems().then((studyItems) =>
-          studyItems.find((study) => study.studyId === studyId)
-        );
-
-      return { getStudy };
-    })(),
+    nuggetAPI: createNuggetApi(),
+    studyAPI: createStudyApi(),
   };
 };
 
