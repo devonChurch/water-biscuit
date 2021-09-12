@@ -79,14 +79,22 @@ const createNuggetApi = () => {
           )
     );
 
-    const deleteNugget = (nuggetId) => requestAllNuggetItems().then(nuggetItems => {
-      const nuggetIndex = nuggetItems.findIndex((nugget) => nugget.nuggetId === nuggetId);
-      const removedNugget = nuggetItems[nuggetIndex];
-      const remainingNugets = [...nuggetItems.slice(0, nuggetIndex), ...nuggetItems.slice(nuggetIndex + 1)]
-      return updateAllNuggetItems(remainingNugets).then(() => removedNugget);
-    });
+  const deleteNugget = (nuggetId) => requestAllNuggetItems().then(nuggetItems => {
+    const nuggetIndex = nuggetItems.findIndex((nugget) => nugget.nuggetId === nuggetId);
+    const removedNugget = nuggetItems[nuggetIndex];
+    const remainingNugets = [...nuggetItems.slice(0, nuggetIndex), ...nuggetItems.slice(nuggetIndex + 1)]
+    return updateAllNuggetItems(remainingNugets).then(() => removedNugget);
+  });
 
-  return { getNuggetItems, getNugget, deleteNugget };
+  const addNugget = (nugget) => requestAllNuggetItems().then(nuggetItems => {
+    const enrichedNugget = {
+      nuggetId: `${Math.round(Math.random() * 1000)}`,
+      ...nugget
+    };
+    return updateAllNuggetItems([...nuggetItems, enrichedNugget]).then(() => enrichedNugget);
+  });
+
+  return { getNuggetItems, getNugget, deleteNugget, addNugget };
 };
 
 const createStudyApi = () => {
@@ -114,7 +122,14 @@ const typeDefs = gql`
     study: Study
     title: String!
     content: String
-    tags: [String]
+    tags: [String]!
+  }
+
+  input AddNuggetInput {
+    studyId: ID!
+    title: String!
+    content: String
+    tags: [String]!
   }
 
   type Query {
@@ -124,6 +139,7 @@ const typeDefs = gql`
 
   type Mutation {
       deleteNugget(nuggetId: ID!): Nugget!
+      addNugget(input: AddNuggetInput!): Nugget!
   }
 `;
 
@@ -140,6 +156,12 @@ const resolvers = {
   Mutation: {
     deleteNugget: (parent, args, context, info) => {
       return context.dataSources.nuggetAPI.deleteNugget(args.nuggetId);
+    },
+    addNugget: (parent, args, context, info) => {
+      console.log({
+        args
+      })
+      return context.dataSources.nuggetAPI.addNugget(args.input);
     },
   },
 
