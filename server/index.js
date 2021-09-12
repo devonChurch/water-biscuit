@@ -1,6 +1,6 @@
 const { ApolloServer, gql } = require("apollo-server");
 
-const nuggetItems = [
+let nuggetDatabase = [
   {
     nuggetId: "001",
     studyId: "001",
@@ -38,7 +38,7 @@ const nuggetItems = [
   },
 ];
 
-const studyItems = [
+let studyDatabase = [
   {
     studyId: "001",
     title: "Some great food",
@@ -58,7 +58,12 @@ const studyItems = [
 
 const createNuggetApi = () => {
   const requestAllNuggetItems = () =>
-    new Promise((resolve) => setTimeout(() => resolve(nuggetItems), 2000));
+    new Promise((resolve) => setTimeout(() => resolve(nuggetDatabase), 1000));
+
+  const updateAllNuggetItems = (nuggetItems) => new Promise((resolve) => setTimeout(() => {
+    nuggetDatabase = nuggetItems;
+    resolve(nuggetDatabase)
+  }, 1000))
 
   const getNugget = (nuggetId) =>
     requestAllNuggetItems().then((nuggetItems) =>
@@ -74,12 +79,19 @@ const createNuggetApi = () => {
           )
     );
 
-  return { getNuggetItems, getNugget };
+    const deleteNugget = (nuggetId) => requestAllNuggetItems().then(nuggetItems => {
+      const nuggetIndex = nuggetItems.findIndex((nugget) => nugget.nuggetId === nuggetId);
+      const removedNugget = nuggetItems[nuggetIndex];
+      const remainingNugets = [...nuggetItems.slice(0, nuggetIndex), ...nuggetItems.slice(nuggetIndex + 1)]
+      return updateAllNuggetItems(remainingNugets).then(() => removedNugget);
+    });
+
+  return { getNuggetItems, getNugget, deleteNugget };
 };
 
 const createStudyApi = () => {
   const requestAllStudyItems = () =>
-    new Promise((resolve) => setTimeout(() => resolve(studyItems), 2000));
+    new Promise((resolve) => setTimeout(() => resolve(studyDatabase), 1000));
 
   const getStudy = (studyId) =>
     requestAllStudyItems().then((studyItems) =>
@@ -91,14 +103,14 @@ const createStudyApi = () => {
 
 const typeDefs = gql`
   type Study {
-    studyId: String!
+    studyId: ID!
     title: String!
     content: String!
   }
 
   type Nugget {
-    nuggetId: String!
-    studyId: String!
+    nuggetId: ID!
+    studyId: ID!
     study: Study
     title: String!
     content: String
@@ -106,8 +118,12 @@ const typeDefs = gql`
   }
 
   type Query {
-    nuggets(tags: [String]): [Nugget]
-    study(studyId: String): Study
+    nuggets(tags: [String]): [Nugget]!
+    study(studyId: ID): Study!
+  }
+
+  type Mutation {
+      deleteNugget(nuggetId: ID!): Nugget!
   }
 `;
 
@@ -121,8 +137,14 @@ const resolvers = {
     },
   },
 
+  Mutation: {
+    deleteNugget: (parent, args, context, info) => {
+      return context.dataSources.nuggetAPI.deleteNugget(args.nuggetId);
+    },
+  },
+
   Nugget: {
-    study(parent) {
+    study(parent, args, context) {
       return context.dataSources.studyAPI.getStudy(parent.studyId);
     },
   },
