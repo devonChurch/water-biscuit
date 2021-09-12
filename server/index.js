@@ -110,6 +110,12 @@ const createStudyApi = () => {
 };
 
 const typeDefs = gql`
+  enum Tag {
+    food
+    automotive
+    technology
+  }
+
   type Study {
     studyId: ID!
     title: String!
@@ -122,14 +128,14 @@ const typeDefs = gql`
     study: Study
     title: String!
     content: String
-    tags: [String]!
+    tags: [Tag]!
   }
 
   input AddNuggetInput {
     studyId: ID!
     title: String!
     content: String
-    tags: [String]!
+    tags: [Tag]!
   }
 
   type Query {
