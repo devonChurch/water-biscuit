@@ -11,7 +11,7 @@ export const Navigation = () => {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/nugget/123" activeStyle={{ color: "teal" }}>
+          <NavLink to="/nugget/create" activeStyle={{ color: "teal" }}>
             Create
           </NavLink>
         </li>

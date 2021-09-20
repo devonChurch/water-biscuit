@@ -1,4 +1,4 @@
-import { useQuery } from "urql";
+import * as urql from "urql";
 
 const NuggetsQuery = `
   query {
@@ -10,7 +10,7 @@ const NuggetsQuery = `
 `;
 
 export const Nuggets = () => {
-  const [result, reexecuteQuery] = useQuery({
+  const [result, reexecuteQuery] = urql.useQuery({
     query: NuggetsQuery,
   });
 

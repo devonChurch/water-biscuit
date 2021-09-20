@@ -1,4 +1,6 @@
-import { createClient, Provider as UqrlProvider } from "urql";
+import { createClient, defaultExchanges, Provider as UqrlProvider } from "urql";
+import { devtoolsExchange } from '@urql/devtools';
+
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import { Nuggets } from "../Nuggets/";
 import { Nugget } from "../Nugget/";
@@ -6,6 +8,7 @@ import { Navigation } from "../Navigation/";
 
 const client = createClient({
   url: "http://localhost:4000/",
+  exchanges: [devtoolsExchange, ...defaultExchanges],
 });
 
 export const App = () => {
@@ -18,7 +21,7 @@ export const App = () => {
           <Route exact path="/nuggets">
             <Nuggets />
           </Route>
-          <Route path="/nugget/:id">
+          <Route exact path="/nugget/create">
             <Nugget />
           </Route>
           <Route path="*">
